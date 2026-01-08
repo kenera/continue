@@ -1,13 +1,16 @@
 import { ChatMessage, PromptTemplate } from "../../index.js";
 import { gptEditPrompt } from "./edit/gpt.js";
 
+const INDENTATION_INSTRUCTION =
+  "Preserve the existing indentation and alignment of the original code. Do not add any extra leading spaces or tabs at the beginning of the rewritten block compared to the original code.";
+
 const simplifiedEditPrompt = `Consider the following code:
 \`\`\`{{{language}}}
 {{{codeToEdit}}}
 \`\`\`
 Edit the code to perfectly satisfy the following user request:
 {{{userInput}}}
-Output nothing except for the code. No code block, no English explanation, no start/end tags. Leave existing comments in place unless changes require modifying them.`;
+Output nothing except for the code. No code block, no English explanation, no start/end tags. Leave existing comments in place unless changes require modifying them. ${INDENTATION_INSTRUCTION}`;
 
 const START_TAG = "<START EDITING HERE>";
 const osModelsEditPrompt: PromptTemplate = (history, otherData) => {
@@ -43,7 +46,7 @@ ${otherData.codeToEdit}
 ${suffixTag}
 \`\`\`
 
-Please rewrite the entire code block above in order to satisfy the following request: "${otherData.userInput}". You should rewrite the entire code block without leaving placeholders, even if the code is the same as before. Leave existing comments in place unless changes require modifying them.${suffixExplanation}`,
+Please rewrite the entire code block above in order to satisfy the following request: "${otherData.userInput}". You should rewrite the entire code block without leaving placeholders, even if the code is the same as before. Leave existing comments in place unless changes require modifying them. ${INDENTATION_INSTRUCTION}${suffixExplanation}`,
       },
       {
         role: "assistant",
@@ -63,7 +66,7 @@ ${otherData.codeToEdit}
 ${suffixTag}
 \`\`\`
 
-Please rewrite the entire code block above, editing the portion below "${START_TAG}" in order to satisfy the following request: "${otherData.userInput}". You should rewrite the entire code block without leaving placeholders, even if the code is the same as before. Leave existing comments in place unless changes require modifying them.${suffixExplanation}
+Please rewrite the entire code block above, editing the portion below "${START_TAG}" in order to satisfy the following request: "${otherData.userInput}". You should rewrite the entire code block without leaving placeholders, even if the code is the same as before. Leave existing comments in place unless changes require modifying them. ${INDENTATION_INSTRUCTION}${suffixExplanation}
 `,
     },
     {

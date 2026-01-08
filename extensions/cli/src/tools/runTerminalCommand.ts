@@ -13,25 +13,30 @@ import {
 
 import { Tool } from "./types.js";
 
-// Helper function to use login shell on Unix/macOS and PowerShell on Windows
 function getShellCommand(command: string): { shell: string; args: string[] } {
   if (process.platform === "win32") {
-    // Windows: Use PowerShell
     return {
       shell: "powershell.exe",
       args: ["-NoLogo", "-ExecutionPolicy", "Bypass", "-Command", command],
     };
   } else {
-    // Unix/macOS: Use login shell to source .bashrc/.zshrc etc.
     const userShell = process.env.SHELL || "/bin/bash";
     return { shell: userShell, args: ["-l", "-c", command] };
   }
 }
 
+const platform = process.platform;
+const shellDescription =
+  platform === "win32"
+    ? "Commands are executed using PowerShell on Windows. Use PowerShell syntax (for example, Get-ChildItem, Set-Content, $env:VAR) instead of bash-specific utilities."
+    : `Commands are executed using your login shell on a Unix-like system (for example, ${process.env.SHELL || "/bin/bash"}). Use standard POSIX shell commands.`;
+
 export const runTerminalCommandTool: Tool = {
   name: "Bash",
   displayName: "Bash",
   description: `Executes a terminal command and returns the output
+
+${shellDescription}
 
 Commands are automatically executed from the current working directory (${process.cwd()}), so there's no need to change directories with 'cd' commands.
 

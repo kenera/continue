@@ -76,5 +76,5 @@ export const defaultApplyPrompt: PromptTemplateFunction = (
   history,
   otherData,
 ) => {
-  return `${otherData.original_code}\n\nThe following code was suggested as an edit:\n\`\`\`\n${otherData.new_code}\n\`\`\`\nPlease apply it to the previous code. Leave existing comments in place unless changes require modifying them.`;
+  return `${otherData.original_code}\n\nThe following code was suggested as an edit:\n\`\`\`\n${otherData.new_code}\n\`\`\`\nPlease apply it to the previous code. Leave existing comments in place unless changes require modifying them. Preserve the existing indentation and alignment of the original code and do not add extra leading spaces or tabs at the beginning of the block compared to the original.`;
 };

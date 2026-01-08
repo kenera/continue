@@ -1,15 +1,11 @@
-import os from "os";
-import { Tool } from "../..";
-import { BUILT_IN_GROUP_NAME, BuiltInToolNames } from "../builtIn";
 import {
   evaluateTerminalCommandSecurity,
   ToolPolicy,
 } from "@continuedev/terminal-security";
+import os from "os";
+import { Tool } from "../..";
+import { BUILT_IN_GROUP_NAME, BuiltInToolNames } from "../builtIn";
 
-/**
- * Get the preferred shell for the current platform
- * @returns The preferred shell command or path
- */
 function getPreferredShell(): string {
   const platform = os.platform();
 
@@ -18,19 +14,29 @@ function getPreferredShell(): string {
   } else if (platform === "darwin") {
     return process.env.SHELL || "/bin/zsh";
   } else {
-    // Linux and other Unix-like systems
     return process.env.SHELL || "/bin/bash";
   }
 }
 
-const PLATFORM_INFO = `Choose terminal commands and scripts optimized for ${os.platform()} and ${os.arch()} and shell ${getPreferredShell()}.`;
+const platform = os.platform();
+
+const PLATFORM_INFO = `Choose terminal commands and scripts optimized for ${platform} and ${os.arch()} and shell ${getPreferredShell()}.`;
+
+const PLATFORM_SPECIFIC_GUIDANCE =
+  platform === "win32"
+    ? "On Windows, commands are executed using PowerShell. You must write PowerShell commands and avoid Linux/Unix-only commands like ls, grep, find, cat, sed, awk, tail, head, or pipelines combining them. Do not attempt to first run Linux commands and then fall back to PowerShell; always choose the correct PowerShell command directly using PowerShell cmdlets such as Get-ChildItem, Get-Content, and Select-String. When modifying file contents, avoid using -replace with complex patterns or many backslashes, because -replace interprets the first argument as a regular expression. Prefer reading the file with Get-Content -Raw into a variable and then using .Replace(oldString, newString) for literal replacements, followed by Set-Content. When reading or writing text files, default to -Encoding UTF8. If the user reports that Chinese characters appear garbled (for example, seeing '鍒涘缓' instead of '创建'), suggest re-running the command with -Encoding GB2312 or -Encoding Default as a fallback."
+    : platform === "darwin" || platform === "linux"
+      ? "On Unix-like systems, commands are executed using your login shell. Use standard POSIX shell commands and utilities appropriate for the detected shell."
+      : "Use commands appropriate for the detected shell and platform.";
 
 const RUN_COMMAND_NOTES = `The shell is not stateful and will not remember any previous commands.\
       When a command is run in the background ALWAYS suggest using shell commands to stop it; NEVER suggest using Ctrl+C.\
       When suggesting subsequent shell commands ALWAYS format them in shell command blocks.\
       Do NOT perform actions requiring special/admin privileges.\
       IMPORTANT: To edit files, use Edit/MultiEdit tools instead of bash commands (sed, awk, etc).\
-      ${PLATFORM_INFO}`;
+      When writing a command, do not wrap the entire command line in extra quotes; write it exactly as you would type it in an interactive shell. For example, prefer findstr /n "pattern" "path" over "findstr /n \"pattern\" \"path\"".\
+      ${PLATFORM_INFO}\
+      ${PLATFORM_SPECIFIC_GUIDANCE}`;
 
 export const runTerminalCommandTool: Tool = {
   type: "function",
